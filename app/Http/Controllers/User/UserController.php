@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
 use App\Actions\LoginAction;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends BaseController
 {
@@ -17,7 +17,7 @@ class UserController extends BaseController
     public function register(RegisterRequest $request) {
         $request->validated($request->all());
 
-        $user = (new User())->SetFromRequest($request);
+        $user = (new User())->setFromRequest($request);
         $user->save();
         return response()->json(
             [
@@ -37,15 +37,11 @@ class UserController extends BaseController
         return response()->json(['token' => $token]);
     }
 
-    public function update(Request $request) {
-        return response()->json(
-            [
-                'id' => auth('sanctum')->user()->getAuthIdentifier()
-            ]
-        );
-    }
-
-    public function userData() {
-
+    public function update(UserUpdateRequest $request) {
+        $request->validated($request->all());
+        /** @var User $user */
+        $user = $request->user();
+        $user->setFromRequest($request);
+        $user->save();
     }
 }

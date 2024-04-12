@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,5 +23,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/user/update', [UserController::class, 'update']);
 });
 
-Route::post('/user/register', [UserController::class, 'register']);
+Route::put('/user/register', [UserController::class, 'register']);
 Route::post('/user/login', [UserController::class, 'login']);

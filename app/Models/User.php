@@ -3,7 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Http\Requests\RegisterRequest;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -52,11 +51,11 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function SetFromRequest(RegisterRequest $request) {
-        $this->first_name = $request->post('first_name');
-        $this->email_address = $request->post('email_address');
-        $this->last_name = $request->post('last_name');
-        $this->password = Hash::make($request->post('password'));
+    public function setFromRequest(\Illuminate\Http\Request $request): User {
+        $this->first_name = $request->post('first_name') ?: $this->first_name;
+        $this->email_address = $request->post('email_address') ?: $this->first_name;
+        $this->last_name = $request->post('last_name') ?: $this->first_name;
+        $this->password = Hash::make($request->post('password')) ?: $this->first_name;
         return $this;
     }
 }
