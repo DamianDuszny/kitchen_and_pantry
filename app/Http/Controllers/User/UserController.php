@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Actions\LoginAction;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UserUpdateRequest;
-use App\Models\User;
+use App\Models\user;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
@@ -17,7 +17,7 @@ class UserController extends BaseController
     public function register(RegisterRequest $request) {
         $request->validated($request->all());
 
-        $user = (new User())->setFromRequest($request);
+        $user = (new user())->setFromRequest($request);
         $user->save();
         return response()->json(
             [
@@ -31,7 +31,7 @@ class UserController extends BaseController
         try {
             $token = $loginAction->ActionRun($request);
         } catch(\Exception $e) {
-            abort(401, $e->getMessage());
+            return response(['message' => $e->getMessage()], 401);
         }
 
         return response()->json(['token' => $token]);
@@ -39,7 +39,7 @@ class UserController extends BaseController
 
     public function update(UserUpdateRequest $request) {
         $request->validated($request->all());
-        /** @var User $user */
+        /** @var user $user */
         $user = $request->user();
         $user->setFromRequest($request);
         $user->save();

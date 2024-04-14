@@ -2,13 +2,13 @@
 
 namespace App\Actions;
 
-use App\Models\User;
+use App\Models\user;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class LoginAction {
     public function ActionRun(Request $request): string {
-        $user = User::where([
+        $user = user::where([
             'email_address' => $request->post('email_address'),
         ])->first();
 
