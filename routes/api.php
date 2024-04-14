@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
+use \App\Http\Controllers\Products\ProductController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,12 +16,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/user/data', function (Request $request) {
-        return $request->user();
+    Route::prefix('user')->group(function() {
+        Route::get('/data', function (Request $request) {
+            return $request->user();
+        });
+        Route::post('/update', [UserController::class, 'update']);
     });
-    Route::post('/user/update', [UserController::class, 'update']);
+    Route::resource('/products', ProductController::class);
 });
 
 Route::put('/user/register', [UserController::class, 'register']);
