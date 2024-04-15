@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Products;
 
 use App\Http\Controllers\Controller;
 use App\Models\products;
-use App\Models\users_products;
+use App\Models\user;
 use App\Models\users_products_extra_data;
 use Illuminate\Http\Request;
 
@@ -31,6 +31,8 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        /** @var user $currentUser */
+        $currentUser = $request->user();
         //1234567
         //@todo transaction
         //@todo walidacja danych
@@ -42,18 +44,29 @@ class ProductController extends Controller
             $product->save();
             return $product;
         });
-        $usersProducts = new users_products(
-            [
-                'users_id'=> $request->user()->id,
-                'products_id' => $product->id
-            ]
-        );
-        $request->user()->products->save($usersProducts); //ewentualnie na odwrót
-//        $usersProducts = new users_products();
-//        $usersProducts->users_id = $request->user()->id;
-//        $usersProducts->products_id = $product->id;
-//        $usersProducts->save();
-        $usersProductsExtraData = new users_products_extra_data();
+        if(!$currentUser->products()->find($product->id)) {
+            $request->user()->products()->attach($product->id);
+        }
+//        var_dump($currentUser->users_products_extra_data()->toSql());exit;
+
+        /** @var users_products_extra_data $productExtraData */
+        $productExtraData = $currentUser->users_products_extra_data()->find($product->id);
+        if(empty($productExtraData)) {
+            echo 1;
+            $row = new users_products_extra_data();
+            $row->product_id = $product->id;
+            $row->user_id = $currentUser->id;
+            $row->weight = 123;
+            $row->price = 123;
+            $row->amount = 5;
+            $row->name = 'test';
+            $currentUser->users_products_extra_data()->attach($product->id, $row->toArray());
+        } else {
+            $productExtraData->weight = $request->post('weight') ?? 0;
+            $productExtraData->amount = $request->post('amount') ?? 0;
+            $productExtraData->save();
+        }
+
     }
 
     /**

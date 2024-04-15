@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $users_id
- * @property string $products_id
+ * @property string $user_id
+ * @property string $product_id
  * @property string $weight
  * @property string $name
  * @property string $amount
@@ -20,7 +20,7 @@ class users_products_extra_data extends Model
 
     protected $fillable = [
         'users_id',
-        'products_id',
+        'product_id',
         'weight',
         'name',
         'amount',

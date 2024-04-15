@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property string $email_address
+ * @property string $id
  * @property string $first_name
  * @property string $last_name
  * @property string $password
@@ -53,9 +55,14 @@ class user extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function products(): BelongsToMany
+    public function products(): HasManyThrough
     {
-        return $this->belongsToMany(products::class, 'users_products');
+        return $this->hasManyThrough(products::class, '\App\Models\users_products_extra_data', 'user_id', 'product_id');
+    }
+
+    public function users_products_extra_data(): BelongsToMany
+    {
+        return $this->belongsToMany(products::class, 'users_products_extra_datas', 'user_id', 'product_id');
     }
 
     public function setFromRequest(\Illuminate\Http\Request $request): user {
