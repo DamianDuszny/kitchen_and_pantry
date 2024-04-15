@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users_products_extra_datas', function(Blueprint $table) {
-            $table->renameColumn('users_id', 'user_id');
-        });
+        Schema::drop('users_products');
     }
 
     /**
@@ -21,8 +19,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users_products_extra_data', function(Blueprint $table) {
-            $table->renameColumn('user_id', 'users_id');
+        Schema::create('users_products', function (Blueprint $table) {
+            $table->foreignId('product_id');
+            $table->foreignId('user_id');
         });
     }
 };

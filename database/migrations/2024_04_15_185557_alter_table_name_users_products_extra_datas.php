@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users_products_extra_datas', function(Blueprint $table) {
-            $table->renameColumn('products_id', 'product_id');
-        });
+        Schema::rename('users_products_extra_datas', 'users_products_extra_data');
     }
 
     /**
@@ -21,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users_products_extra_data', function(Blueprint $table) {
-            $table->renameColumn('product_id', 'products_id');
-        });
+        Schema::rename('users_products_extra_data', 'users_products_extra_datas');
     }
 };
