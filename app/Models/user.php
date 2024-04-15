@@ -57,15 +57,15 @@ class user extends Authenticatable
 
     public function products(): HasManyThrough
     {
-        return $this->hasManyThrough(products::class, '\App\Models\users_products_extra_data', 'user_id', 'product_id');
+        return $this->hasManyThrough(products::class, users_products_extra_data::class, 'users_id', 'id');
     }
 
-    public function users_products_extra_data(): BelongsToMany
+    public function users_products_extra_data(): HasMany
     {
-        return $this->belongsToMany(products::class, 'users_products_extra_datas', 'user_id', 'product_id');
+        return $this->HasMany(users_products_extra_data::class, 'users_id');
     }
 
-    public function setFromRequest(\Illuminate\Http\Request $request): user {
+    public function setFromRequest(\Illuminate\Http\Request $request): self {
         $this->first_name = $request->post('first_name') ?: $this->first_name;
         $this->email_address = $request->post('email_address') ?: $this->first_name;
         $this->last_name = $request->post('last_name') ?: $this->first_name;

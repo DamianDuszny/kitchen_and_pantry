@@ -18,9 +18,11 @@ class users_products_extra_data extends Model
 {
     use HasFactory;
 
+    public $table = 'users_products_extra_data';
+
     protected $fillable = [
         'users_id',
-        'product_id',
+        'products_id',
         'weight',
         'name',
         'amount',

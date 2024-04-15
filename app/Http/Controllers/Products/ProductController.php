@@ -44,23 +44,18 @@ class ProductController extends Controller
             $product->save();
             return $product;
         });
-        if(!$currentUser->products()->find($product->id)) {
-            $request->user()->products()->attach($product->id);
-        }
-//        var_dump($currentUser->users_products_extra_data()->toSql());exit;
 
         /** @var users_products_extra_data $productExtraData */
         $productExtraData = $currentUser->users_products_extra_data()->find($product->id);
         if(empty($productExtraData)) {
-            echo 1;
             $row = new users_products_extra_data();
-            $row->product_id = $product->id;
-            $row->user_id = $currentUser->id;
+            $row->products_id = $product->id;
+            $row->users_id = $currentUser->id;
             $row->weight = 123;
             $row->price = 123;
             $row->amount = 5;
             $row->name = 'test';
-            $currentUser->users_products_extra_data()->attach($product->id, $row->toArray());
+            $row->save();
         } else {
             $productExtraData->weight = $request->post('weight') ?? 0;
             $productExtraData->amount = $request->post('amount') ?? 0;
