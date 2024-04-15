@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $id
- * @property string $user_id
- * @property string $product_id
- * @property string $weight
+ * @property int $users_id
+ * @property int $products_id
+ * @property int $unit_weight
+ * @property int $net_weight
  * @property string $name
- * @property string $amount
- * @property string $price
+ * @property int $amount
+ * @property int $price
  */
 class users_products_extra_data extends Model
 {
@@ -23,7 +24,8 @@ class users_products_extra_data extends Model
     protected $fillable = [
         'users_id',
         'products_id',
-        'weight',
+        'unit_weight',
+        'net_weight',
         'name',
         'amount',
         'price',

@@ -33,9 +33,6 @@ class ProductController extends Controller
     {
         /** @var user $currentUser */
         $currentUser = $request->user();
-        //1234567
-        //@todo transaction
-        //@todo walidacja danych
         /** @var products $product */
         $product = products::where('ean', $request->post('ean'))->firstOr(function () use($request) {
             $product = new products();
@@ -48,19 +45,16 @@ class ProductController extends Controller
         /** @var users_products_extra_data $productExtraData */
         $productExtraData = $currentUser->users_products_extra_data()->find($product->id);
         if(empty($productExtraData)) {
-            $row = new users_products_extra_data();
-            $row->products_id = $product->id;
-            $row->users_id = $currentUser->id;
-            $row->weight = 123;
-            $row->price = 123;
-            $row->amount = 5;
-            $row->name = 'test';
-            $row->save();
-        } else {
-            $productExtraData->weight = $request->post('weight') ?? 0;
-            $productExtraData->amount = $request->post('amount') ?? 0;
-            $productExtraData->save();
+            $productExtraData = new users_products_extra_data();
+            $productExtraData->products_id = $product->id;
+            $productExtraData->users_id = $currentUser->id;
         }
+        $productExtraData->price = $request->post('price') * 100 ?? 0;
+        $productExtraData->name = $request->post('name') ?? '';
+        $productExtraData->unit_weight = $request->post('unit_weight') ?? 0;
+        $productExtraData->net_weight = $request->post('net_weight') ?? 0;
+        $productExtraData->amount = $request->post('amount') ?? 0;
+        $productExtraData->save();
 
     }
 
