@@ -3,6 +3,7 @@
 use App\Http\Controllers\User\UserController;
 use Illuminate\Http\Request;
 use \App\Http\Controllers\Products\ProductController;
+use \App\Http\Controllers\Recipes\RecipesController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,6 +25,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/update', [UserController::class, 'update']);
     });
     Route::resource('/products', ProductController::class);
+    Route::prefix('recipes')->group(function() {
+        Route::get('/', [RecipesController::class, 'index']);
+        Route::post('/', [RecipesController::class, 'store']);
+    });
 });
 
 Route::put('/user/register', [UserController::class, 'register']);

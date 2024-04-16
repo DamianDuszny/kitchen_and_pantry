@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products_types', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
+        Schema::create('recipes_products', function (Blueprint $table) {
+            $table->foreignIdFor(\App\Models\products::class);
+            $table->foreignIdFor(\App\Models\recipes::class);
+            $table->smallInteger('how_well_matches');
+            $table->timestamps();
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('recipes_products');
     }
 };
