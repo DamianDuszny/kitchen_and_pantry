@@ -19,4 +19,9 @@ class products extends Model
     protected $fillable = [
         'ean',
     ];
+
+    public function recipes(): BelongsToMany
+    {
+        return $this->belongsToMany(recipes::class, 'recipes_products');
+    }
 }

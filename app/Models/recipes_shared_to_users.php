@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class recipes_shared_to_users extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+      'users_id',
+       'recipes_id'
+    ];
 }
