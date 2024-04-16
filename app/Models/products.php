@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
  * @property string $id
  * @property string $ean
- * @property string $type
  */
 class products extends Model
 {
@@ -18,6 +18,10 @@ class products extends Model
     public $timestamps = false;
     protected $fillable = [
         'ean',
-        'type',
     ];
+
+//    public function users_products_extra_data(): BelongsToMany
+//    {
+//        return $this->belongsToMany(users_products_extra_data::class);
+//    }
 }

@@ -55,9 +55,9 @@ class user extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function products(): HasManyThrough
+    public function products(): belongsToMany
     {
-        return $this->hasManyThrough(products::class, users_products_extra_data::class, 'users_id', 'id');
+        return $this->belongsToMany(products::class, 'users_products_extra_data', 'users_id')->withPivot('*');
     }
 
     public function users_products_extra_data(): HasMany
