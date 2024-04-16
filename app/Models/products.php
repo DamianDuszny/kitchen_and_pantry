@@ -19,9 +19,4 @@ class products extends Model
     protected $fillable = [
         'ean',
     ];
-
-//    public function users_products_extra_data(): BelongsToMany
-//    {
-//        return $this->belongsToMany(users_products_extra_data::class);
-//    }
 }
