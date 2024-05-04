@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\RecipesController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
-use \App\Http\Controllers\Products\ProductController;
-use \App\Http\Controllers\Recipes\RecipesController;
 use Illuminate\Support\Facades\Route;
 
 /*

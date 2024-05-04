@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Api;
 
 use App\Actions\LoginAction;
 use App\Http\Requests\RegisterRequest;
