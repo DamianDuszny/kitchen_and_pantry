@@ -25,8 +25,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        /** @var user $currentUser */
-        $user = $request->user();
+
         /** @var products $product */
         $product = products::where('ean', $request->post('ean'))->firstOr(function () use ($request) {
             $product = new products();
@@ -35,8 +34,10 @@ class ProductController extends Controller
             return $product;
         });
 
+        /** @var user $currentUser */
+        $user = $request->user();
         /** @var users_products_extra_data $productExtraData */
-        $productExtraData = $user->users_products_extra_data()->find($product->id);
+        $productExtraData = $user->users_products_extra_data()->where('products_id', '=', $product->id)->first();
         if (empty($productExtraData)) {
             $productExtraData = new users_products_extra_data();
             $productExtraData->products_id = $product->id;
@@ -63,6 +64,38 @@ class ProductController extends Controller
     }
 
     /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        if (empty($request->post('amount'))) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'amount not specified'
+                ],
+                400
+            );
+        }
+        /** @var user $currentUser */
+        $user = $request->user();
+        /** @var users_products_extra_data $productExtraData */
+        $productExtraData = $user->users_products_extra_data()->find($id);
+        if (empty($productExtraData)) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'product with given id not found'
+                ]
+                , 400
+            );
+        }
+        $productExtraData->amount = $request->post('amount');
+        $productExtraData->save();
+        return response()->json(['success' => true]);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $ean)
@@ -70,9 +103,9 @@ class ProductController extends Controller
         /** @var User $currentUser */
         $user = auth('sanctum')->user();
         $productData = $user->products()->where('products.ean', $ean)->first();
-        if(empty($productData)) {
+        if (empty($productData)) {
             return;
         }
-        $user->users_products_extra_data()->delete($productData->id);
+        $user->users_products_extra_data()->find($productData->id)->delete();
     }
 }
