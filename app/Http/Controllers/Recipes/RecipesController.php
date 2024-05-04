@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRecipeRequest;
 use App\Models\recipes;
 use App\Models\recipes_products;
-use App\Models\recipes_types;
-use App\Models\user;
 use Illuminate\Http\Request;
 
 class RecipesController extends Controller
@@ -17,30 +15,14 @@ class RecipesController extends Controller
     }
 
     public function store(StoreRecipeRequest $request) {
-        if(!recipes_types::find($request->post('recipe_type_id'))) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => 'Given recipe type id doesnt exists in database',
-                    'recipe_id' => $request->post('recipe_type_id')
-                ]
-            );
-        }
-
-        $productsIds = array_keys($request->post('products_ids_to_amounts'));
-        /** @var user $user */
-        $user = auth('sanctum')->user();
-        $userProductsUsedInRecipe = $user->products()->whereIn('products_id', $productsIds)->get()->toArray();
-
-        foreach($userProductsUsedInRecipe as $product) {
-            unset($productsIds[array_search($product['pivot']['products_id'],$productsIds)]);
-        }
-        if(!empty($productsIds)) {
+        try {
+            $userProductsUsedInRecipe = $request->getUserProductsData();
+        } catch (\Exception $e) {
             return response()->json(
                 [
                     'success' => false,
                     'message' => 'Recipe contains products that are not connected to account. You must add these products into your account',
-                    'products_ids' => array_values($productsIds)
+                    'products_ids' => $e->getMessage()
                 ]
             );
         }
