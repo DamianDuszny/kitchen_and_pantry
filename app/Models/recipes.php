@@ -13,6 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $name
  * @property int $kcal
  * @property int $portion_for_how_many
+ * @property string $description
+ * @property string $instruction
+ * @property int $preparation_time
  * @property int $complexity
  * @property int $type
  * @property int $id
@@ -25,7 +28,10 @@ class recipes extends Model
         'name',
         'kcal',
         'portion_for_how_many',
+        'preparation_time',
         'complexity',
+        'description',
+        'instruction',
         'type'
     ];
 

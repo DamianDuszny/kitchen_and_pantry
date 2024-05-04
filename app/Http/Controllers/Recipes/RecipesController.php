@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Recipes;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRecipeRequest;
 use App\Models\recipes;
 use App\Models\recipes_products;
 use App\Models\recipes_types;
@@ -15,7 +16,7 @@ class RecipesController extends Controller
         echo 'index';
     }
 
-    public function store(Request $request) {
+    public function store(StoreRecipeRequest $request) {
         if(!recipes_types::find($request->post('recipe_type_id'))) {
             return response()->json(
                 [
@@ -26,7 +27,7 @@ class RecipesController extends Controller
             );
         }
 
-        $productsIds = array_unique($request->post('products_ids'));
+        $productsIds = array_keys($request->post('products_ids_to_amounts'));
         /** @var user $user */
         $user = auth('sanctum')->user();
         $userProductsUsedInRecipe = $user->products()->whereIn('products_id', $productsIds)->get()->toArray();
@@ -47,13 +48,19 @@ class RecipesController extends Controller
         $recipe->name = $request->post('recipe_name');
         $recipe->kcal = $request->post('kcal');
         $recipe->user_id = auth('sanctum')->id();
-        $recipe->type = $request->post('recipe_type');
+        $recipe->type = $request->post('recipe_type_id');
         $recipe->portion_for_how_many = $request->post('portion_for_how_many');
+        $recipe->description = $request->post('description');
+        $recipe->instruction = $request->post('instruction');
+        $recipe->preparation_time = $request->post('preparation_time');
+        $recipe->complexity = $request->post('complexity');
         $recipe->save();
         foreach($userProductsUsedInRecipe as $product) {
             $recipesProducts = new recipes_products();
             $recipesProducts->products_id = $product['pivot']['products_id'];
             $recipesProducts->recipes_id = $recipe->id;
+            $recipesProducts->how_well_matches = 100;
+            $recipesProducts->amount = $request->post('products_ids_to_amounts')[$product['pivot']['products_id']];
             $recipesProducts->save();
         }
         return redirect('/recipe/'.$recipe->id);
