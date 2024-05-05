@@ -28,6 +28,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('recipes')->group(function() {
         Route::get('/', [RecipesController::class, 'index']);
         Route::post('/', [RecipesController::class, 'store']);
+        Route::get('/{recipe_id}', [RecipesController::class, 'show']);
+        Route::delete('/{recipe_id}', [RecipesController::class, 'deleteRecipe']);
+        Route::delete('/{recipe_id}/substitutes/{substituteProductId}', [RecipesController::class, 'deleteSubstituteProduct']);
+        Route::post('/add-substitutes', [RecipesController::class, 'addSubstitutes']);
     });
 });
 

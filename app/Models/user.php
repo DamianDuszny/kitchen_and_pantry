@@ -70,4 +70,9 @@ class user extends Authenticatable
         $this->password = Hash::make($request->post('password')) ?: $this->first_name;
         return $this;
     }
+
+    public function recipes(): HasMany
+    {
+        return $this->HasMany(recipes::class);
+    }
 }
