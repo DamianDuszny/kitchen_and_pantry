@@ -61,9 +61,13 @@ class RecipesController extends Controller
     }
 
     public function addSubstitutes(AddRecipeSubstituteProductsRequest $request) {
-        $recipesSubstituteProducts = new recipes_substitute_products();
-        $recipesSubstituteProducts->recipes_id = $request->post('recipe_id');
-        $recipesSubstituteProducts->products_id = $request->post('products_id');
+        $recipesSubstituteProducts = recipes_substitute_products::where('recipe_id', '=', $request->post('products_id'))
+            ->where('products_id', '=', $request->post('products_id'))->get();
+        if(empty($recipesSubstituteProducts)) {
+            $recipesSubstituteProducts = new recipes_substitute_products();
+            $recipesSubstituteProducts->recipes_id = $request->post('recipe_id');
+            $recipesSubstituteProducts->products_id = $request->post('products_id');
+        }
         $recipesSubstituteProducts->substitute_for = $request->post('main_products_id');
         $recipesSubstituteProducts->comment = $request->post('comment');
         $recipesSubstituteProducts->weight = $request->post('weight');
