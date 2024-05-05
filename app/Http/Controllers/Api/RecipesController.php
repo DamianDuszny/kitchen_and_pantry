@@ -11,13 +11,12 @@ use App\Models\recipes_products;
 use App\Models\recipes_substitute_products;
 use App\Models\user;
 use Illuminate\Http\Request;
-
 class RecipesController extends Controller
 {
     public function index(Request $request) {
         /** @var user $user */
         $user = auth('sanctum')->user();
-        return $user->recipes()->with('recipe_products')->get();
+        return $user->recipes()->with('recipe_products')->with('recipe_substitute_products')->get();
     }
 
     public function show(Request $request, string $id) {
@@ -61,13 +60,20 @@ class RecipesController extends Controller
     }
 
     public function addSubstitutes(AddRecipeSubstituteProductsRequest $request) {
-        $recipesSubstituteProducts = recipes_substitute_products::where('recipe_id', '=', $request->post('products_id'))
-            ->where('products_id', '=', $request->post('products_id'))->get();
-        if(empty($recipesSubstituteProducts)) {
-            $recipesSubstituteProducts = new recipes_substitute_products();
-            $recipesSubstituteProducts->recipes_id = $request->post('recipe_id');
-            $recipesSubstituteProducts->products_id = $request->post('products_id');
+        $recipesSubstituteProducts = recipes_substitute_products::where('recipes_id', '=', $request->post('recipe_id'))
+            ->where('products_id', '=', $request->post('products_id'));
+        if(!empty($recipesSubstituteProducts)) {
+            $recipesSubstituteProducts->update([
+                'comment' => $request->post('comment'),
+                'weight' => $request->post('weight'),
+                'amount' => $request->post('amount'),
+                'how_well_fits' => $request->post('how_well_fits')
+            ]);
+            return;
         }
+        $recipesSubstituteProducts = new recipes_substitute_products();
+        $recipesSubstituteProducts->recipes_id = $request->post('recipe_id');
+        $recipesSubstituteProducts->products_id = $request->post('products_id');
         $recipesSubstituteProducts->substitute_for = $request->post('main_products_id');
         $recipesSubstituteProducts->comment = $request->post('comment');
         $recipesSubstituteProducts->weight = $request->post('weight');
