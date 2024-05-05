@@ -56,7 +56,7 @@ class RecipesController extends Controller
             $recipesProducts->amount = $request->post('products_ids_to_amounts')[$product['pivot']['products_id']];
             $recipesProducts->save();
         }
-        return redirect('/recipe/'.$recipe->id);
+        return redirect('/recipes/'.$recipe->id);
     }
 
     public function addSubstitutes(AddRecipeSubstituteProductsRequest $request) {
