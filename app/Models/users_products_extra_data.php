@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @property string $id
@@ -26,8 +28,15 @@ class users_products_extra_data extends Model
         'products_id',
         'unit_weight',
         'net_weight',
-        'name',
         'amount',
         'price',
     ];
+
+    public function description(): BelongsTo {
+        return $this->belongsTo();
+    }
 }
+
+
+
+

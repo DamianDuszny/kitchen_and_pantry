@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users_products_extra_data', function(Blueprint $table) {
             $table->dropColumn('name');
-            $table->addColumn('date', 'expiration_date');
+            $table->addColumn('date', 'expiration_date')->nullable();
         });
     }
 
