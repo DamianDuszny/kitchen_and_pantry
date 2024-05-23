@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Awobaz\Compoships\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class users_products_extra_data extends Model
 {
     use HasFactory;
+    use \Awobaz\Compoships\Compoships;
 
     public $table = 'users_products_extra_data';
 
@@ -33,7 +34,11 @@ class users_products_extra_data extends Model
     ];
 
     public function description(): BelongsTo {
-        return $this->belongsTo();
+        return $this->belongsTo(users_products_descriptions::class, ['products_id', 'users_id'], ['products_id', 'users_id']);
+    }
+
+    public function products_ean(): BelongsTo {
+        return $this->belongsTo(products::class, 'products_id');
     }
 }
 

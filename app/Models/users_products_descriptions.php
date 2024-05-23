@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Awobaz\Compoships\Database\Eloquent\Model;
 
 /**
  * @property int $users_id
@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class users_products_descriptions extends Model
 {
+    use \Awobaz\Compoships\Compoships;
     /**
      * The attributes that are mass assignable.
      *

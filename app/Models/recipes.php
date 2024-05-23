@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,5 +49,7 @@ class recipes extends Model
         return $this->BelongsToMany(products::class, 'recipes_substitute_products')->withPivot('*');
     }
 
-
+    public static function userRecipe(Builder $builder, int $userId) : Builder {
+        return $builder->where('user_id', $userId);
+    }
 }

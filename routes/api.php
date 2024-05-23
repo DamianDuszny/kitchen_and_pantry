@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RecipesController;
+use App\Http\Controllers\Api\ShoppingListController as ShoppingListController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{recipe_id}/substitutes/{substituteProductId}', [RecipesController::class, 'deleteSubstituteProduct']);
         Route::post('/add-substitutes', [RecipesController::class, 'addSubstitutes']);
     });
+
+    Route::post('/shopping-list', [ShoppingListController::class, 'createShoppingListFromRecipes']);
 });
 
 Route::put('/user/register', [UserController::class, 'register']);
