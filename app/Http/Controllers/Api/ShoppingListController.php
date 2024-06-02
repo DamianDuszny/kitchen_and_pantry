@@ -5,14 +5,15 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ShoppingListAccessRequest;
 use App\Models\recipes;
+use App\Models\shopping_list;
 use App\Models\user;
 use App\Services\RecipesList;
-use App\Services\ShoppingList;
+use App\Services\ShoppingListCreator;
 use Illuminate\Http\Request;
 
 class ShoppingListController extends Controller
 {
-    public function index(ShoppingListAccessRequest $request, ShoppingList $shoppingList) {
+    public function index(ShoppingListAccessRequest $request, ShoppingListCreator $shoppingList) {
 
     }
 
@@ -25,13 +26,33 @@ class ShoppingListController extends Controller
      * @param Request $request
      * @return array
      */
-    public function createShoppingListFromRecipes(RecipesList $recipesList, Request $request): array {
+    public function createShoppingListFromRecipesList(RecipesList $recipesList, Request $request): array {
         /** @var User $user */
         $user = auth('sanctum')->user();
-        return (new ShoppingList($user))->transformRecipesListToShoppingList(
-            $recipesList,
-            (bool)$request->post('check_pantry'),
-            array_count_values($request->post('recipes_ids'))
+        $shoppingList = new shopping_list(
+            [
+                'users_id' => $user->id,
+                'note' => 'genereated for recipes ids: '.implode(',', $request->post('recipes_ids'))
+            ]
         );
+        $neededProducts = (new ShoppingListCreator(
+            $user,
+            $recipesList,
+            array_count_values($request->post('recipes_ids'))
+        ))->getNeededProductsAmountsFromRecipesList((bool)$request->post('check_pantry'));
+        //@todo reserved users products for shopping list
+        return $neededProducts;
+    }
+
+    public function editShoppingList(Request $request) {
+        $productsAmounts = [];
+    }
+
+    public function approveShoppingList() {
+
+    }
+
+    public function createShoppingList(Request $request) {
+
     }
 }

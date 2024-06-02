@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shopping_lists', function(Blueprint $table) {
-            $table->dropColumn('users_products_id');
+            $table->dropColumn('products_id');
             $table->dropColumn('amount');
             $table->dropColumn('net_weight');
             $table->dropColumn('bought');
@@ -28,8 +28,8 @@ return new class extends Migration
         Schema::table('shopping_lists', function(Blueprint $table) {
             $table->integer('amount')->nullable();
             $table->integer('net_weight')->nullable();
-            $table->boolean('bought');
-            $table->foreignId('parent_id')->constrained('parents');
+            $table->boolean('bought')->nullable();
+            $table->foreignId('products_id')->nullable()->constrained('products');
             $table->dropColumn('note');
         });
     }

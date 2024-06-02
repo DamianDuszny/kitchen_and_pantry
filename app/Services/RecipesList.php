@@ -21,11 +21,6 @@ class RecipesList
         $this->modelsList = $sq->get();
     }
 
-    public function getList(): array
-    {
-        return $this->modelsList;
-    }
-
     public function getProductsFromRecipes(): array
     {
         $products = [];

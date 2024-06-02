@@ -25,7 +25,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
         Route::post('/update', [UserController::class, 'update']);
     });
+
     Route::resource('/products', ProductController::class);
+
     Route::prefix('recipes')->group(function() {
         Route::get('/', [RecipesController::class, 'index']);
         Route::post('/', [RecipesController::class, 'store']);
@@ -35,7 +37,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/add-substitutes', [RecipesController::class, 'addSubstitutes']);
     });
 
-    Route::post('/shopping-list', [ShoppingListController::class, 'createShoppingListFromRecipes']);
+    Route::prefix('/shopping-list')->group(function() {
+        Route::post('/create-shopping-list-from-recipes', [ShoppingListController::class, 'createShoppingListFromRecipesList']);
+        Route::post('/create-shopping-list', [ShoppingListController::class, 'createShoppingList']);
+    });
 });
 
 Route::put('/user/register', [UserController::class, 'register']);
