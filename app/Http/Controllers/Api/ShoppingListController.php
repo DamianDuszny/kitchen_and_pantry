@@ -7,13 +7,16 @@ use App\Http\Requests\ShoppingListAccessRequest;
 use App\Models\recipes;
 use App\Models\shopping_list;
 use App\Models\user;
+use App\Models\users_products_extra_data;
 use App\Services\RecipesList;
 use App\Services\ShoppingListCreator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 
 class ShoppingListController extends Controller
 {
-    public function index(ShoppingListAccessRequest $request, ShoppingListCreator $shoppingList) {
+    public function index(ShoppingListAccessRequest $request, ShoppingListCreator $shoppingList)
+    {
 
     }
 
@@ -26,33 +29,31 @@ class ShoppingListController extends Controller
      * @param Request $request
      * @return array
      */
-    public function createShoppingListFromRecipesList(RecipesList $recipesList, Request $request): array {
+    public function createShoppingListFromRecipesList(RecipesList $recipesList, Request $request): \Illuminate\Support\Collection
+    {
         /** @var User $user */
         $user = auth('sanctum')->user();
-        $shoppingList = new shopping_list(
-            [
-                'users_id' => $user->id,
-                'note' => 'genereated for recipes ids: '.implode(',', $request->post('recipes_ids'))
-            ]
-        );
-        $neededProducts = (new ShoppingListCreator(
+        $shoppingList = (new ShoppingListCreator(
             $user,
             $recipesList,
             array_count_values($request->post('recipes_ids'))
-        ))->getNeededProductsAmountsFromRecipesList((bool)$request->post('check_pantry'));
-        //@todo reserved users products for shopping list
-        return $neededProducts;
+        ))->createShoppingList((bool)$request->post('check_pantry'));
+
+        return collect(["shopping_list_data" => $shoppingList, "pantry_data" => 1]);
     }
 
-    public function editShoppingList(Request $request) {
+    public function editShoppingList(Request $request)
+    {
         $productsAmounts = [];
     }
 
-    public function approveShoppingList() {
+    public function approveShoppingList()
+    {
 
     }
 
-    public function createShoppingList(Request $request) {
+    public function createShoppingList(Request $request)
+    {
 
     }
 }

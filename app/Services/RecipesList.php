@@ -32,4 +32,8 @@ class RecipesList
         }
         return $products;
     }
+
+    public function getRecipesIds(): array {
+        return $this->modelsList->modelKeys();
+    }
 }

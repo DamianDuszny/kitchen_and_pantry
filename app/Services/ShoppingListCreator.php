@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\shopping_list;
 use App\Models\shopping_list_products;
 use App\Models\user;
+use App\Models\users_products_extra_data;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ShoppingListCreator
 {
@@ -12,41 +15,30 @@ class ShoppingListCreator
 
     private readonly array $userPantryProducts;
 
-    private readonly shopping_list $shopping_list;
+    private readonly shopping_list $shoppingList;
 
     public function __construct(
-        private readonly User $user,
+        private readonly User        $user,
         private readonly RecipesList $recipesList,
-        private readonly array $multipleRecipes
+        private readonly array       $multipleRecipes
     )
     {
-        $this->shopping_list = new shopping_list(['users_id'=>$this->user->id]);
-        $this->shopping_list->save();
+        $this->shoppingList = new shopping_list(
+            [
+                'users_id' => $this->user->id,
+                'note' => 'created from recipes: ' . implode($this->recipesList->getRecipesIds())
+            ]
+        );
+        $this->shoppingList->save();
     }
 
     /**
-     * Returns array:
-     * {
-     *  products_id: {
-     *      recipes_id: {
-     *          "products_id": products_id - id from products table,
-     *          "main_amount_needed": int - recipe needed product amount - pantry products (if argument checkPantry is set to true),
-     *          "recipes_id": int - recipes_id from users_recipes table,
-     *          "substitute_product_id": int - id from products table,
-     *          "main_amount_in_pantry": int - main recipe product amount in pantry,
-     *          "substitute_amount_in_pantry": int - substitute recipe product amount in pantry,
-     *          "substitute_amount_needed": int - recipe substitute for main product needed amount - pantry products (if argument checkPantry is set to true)
-     *      }
-     *  }
-     * }
-     *
-     * @param RecipesList $this->recipesList
      * @param bool $checkPantry if is set to true, user pantry products amount will be checked and subtracted from needed
      * product amount for recipe. Main products have priority over substitute products.
-     * @return array
+     * @return shopping_list
      */
 
-    public function getNeededProductsAmountsFromRecipesList(bool $checkPantry = true): array
+    public function createShoppingList(bool $checkPantry = true): shopping_list
     {
         //@todo weight too...
         if ($checkPantry) {
@@ -57,23 +49,30 @@ class ShoppingListCreator
                 )
             );
         }
+
         $neededProducts = $this->getNeededMainProducts($checkPantry);
         $this->saveShoppingListProducts($neededProducts);
-        $nedeedSubstituteProducts = $this->getSubstituteProductsForMainProducts($neededProducts, $checkPantry);
-        $this->saveShoppingListProducts($nedeedSubstituteProducts);
-        return $nedeedSubstituteProducts;
+        $this->shoppingList->load('shoppingListProducts');
+        $neededSubstituteProducts = $this->getSubstituteProductsForMainProducts($this->shoppingList->shoppingListProducts, $checkPantry);
+        $this->saveShoppingListProducts($neededSubstituteProducts);
+        $this->shoppingList->setRelation(
+            'shoppingListProducts',
+            $this->shoppingList->shoppingListProducts->merge(collect($neededSubstituteProducts))
+        );
+        return $this->shoppingList;
     }
 
     /**
      * @param array $shoppingListProducts
      * @return void
      */
-    private function saveShoppingListProducts(array $shoppingListProducts) {
+    private function saveShoppingListProducts(array $shoppingListProducts)
+    {
         shopping_list_products::insert(
             array_filter(
                 array_map(
-                    fn ($x) => $x->amount > 0 ? $x->toArray() : null,
-                    array_merge(...$shoppingListProducts)
+                    fn($x) => $x->toArray(),
+                    $shoppingListProducts
                 )
             )
         );
@@ -83,7 +82,8 @@ class ShoppingListCreator
      * @param bool $checkPantry
      * @return shopping_list[]
      */
-    private function getNeededMainProducts(bool $checkPantry = true): array {
+    private function getNeededMainProducts(bool $checkPantry = true): array
+    {
         $shoppingListProducts = [];
         foreach ($this->recipesList->getProductsFromRecipes()['main_products'] as $product) {
             for ($i = 0; $i <= $this->multipleRecipes[$product['recipes_id']] ?? 0; $i++) {
@@ -100,50 +100,63 @@ class ShoppingListCreator
                 }
             }
         }
-        return $shoppingListProducts;
+        return array_merge(...$shoppingListProducts);
     }
 
     /**
-     * @param array $neededProducts
+     * @param Collection $mainProducts - collection of {@see shopping_list_products}
      * @param bool $checkPantry
      * @return shopping_list_products[]
      */
-    private function getSubstituteProductsForMainProducts(array $neededProducts, bool $checkPantry = true): array {
+    private function getSubstituteProductsForMainProducts(Collection $mainProducts, bool $checkPantry = true): array
+    {
         $neededSubstituteProducts = [];
-        foreach ($neededProducts as $recipesProducts) {
-            /** @var shopping_list_products $mainShoppingListProduct */
-            foreach ($recipesProducts as $mainShoppingListProduct) {
-                $substitute = $this->findSubstitutesForProductInRecipesList($mainShoppingListProduct);
-                if (empty($substitute)) {
-                    continue;
-                }
+        /** @var shopping_list_products $mainShoppingListProduct */
+        foreach ($mainProducts as $mainShoppingListProduct) {
+            $substitute = $this->findSubstitutesForProductInRecipesList($mainShoppingListProduct);
+            if (empty($substitute)) {
+                continue;
+            }
+            //if null use amount of main product
+            $substitute['amount'] ??= $mainShoppingListProduct['amount'];
+            if (empty($neededSubstituteProducts[$substitute['products_id']][$mainShoppingListProduct['recipes_id']])) {
                 $shoppingListProduct = $this->getShoppingListProduct(
                     productsId: $substitute['products_id'],
-                    recipesId: $mainShoppingListProduct->recipes_id,
+                    recipesId: $mainShoppingListProduct['recipes_id'],
                     amount: $this->getNeededAmountForProduct($substitute, $checkPantry, false),
-                    substituteFor: $mainShoppingListProduct->id
+                    substituteFor: $mainShoppingListProduct['id'],
+                    accepted: false
                 );
                 $neededSubstituteProducts[$substitute['products_id']][$mainShoppingListProduct['recipes_id']] = $shoppingListProduct;
+            } else {
+                $neededSubstituteProducts[$substitute['products_id']][$mainShoppingListProduct['recipes_id']]->amount += $this->getNeededAmountForProduct($substitute, $checkPantry, false);
             }
+
         }
-        return $neededSubstituteProducts;
+        return array_merge(...$neededSubstituteProducts);
     }
 
     /**
      * @param array $data
      * @return shopping_list_products
      */
-    private function getShoppingListProduct(int $productsId, int $recipesId, ?int $amount = null, int $weight = null, ?int $substituteFor = null): shopping_list_products {
+    private function getShoppingListProduct(int $productsId, int $recipesId, ?int $amount = null, int $weight = null, ?int $substituteFor = null, ?bool $accepted = true): shopping_list_products
+    {
         $shoppingListProduct = new shopping_list_products();
-        $shoppingListProduct->shopping_lists_id = $this->shopping_list->id;
+        $shoppingListProduct->shopping_lists_id = $this->shoppingList->id;
         $shoppingListProduct->products_id = $productsId;
         $shoppingListProduct->recipes_id = $recipesId;
         $shoppingListProduct->amount = $amount;
         $shoppingListProduct->weight = $weight;
         $shoppingListProduct->substitute_for = $substituteFor;
+        $shoppingListProduct->accepted = $accepted;
         return $shoppingListProduct;
     }
 
+    /**
+     * @param shopping_list_products $mainProduct
+     * @return array
+     */
     private function findSubstitutesForProductInRecipesList(shopping_list_products $mainProduct): array
     {
         foreach ($this->recipesList->getProductsFromRecipes()['substitute_products'] as $product) {
