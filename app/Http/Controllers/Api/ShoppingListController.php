@@ -33,13 +33,18 @@ class ShoppingListController extends Controller
     {
         /** @var User $user */
         $user = auth('sanctum')->user();
-        $shoppingList = (new ShoppingListCreator(
+        $shoppingListCreator = new ShoppingListCreator(
             $user,
             $recipesList,
             array_count_values($request->post('recipes_ids'))
-        ))->createShoppingList((bool)$request->post('check_pantry'));
-
-        return collect(["shopping_list_data" => $shoppingList, "pantry_data" => 1]);
+        );
+        $shoppingListCreator->createShoppingList((bool)$request->post('check_pantry'));
+        return collect(
+            [
+                "shopping_list_data" => $shoppingListCreator->getShoppingList(),
+                "pantry_data" => $shoppingListCreator->getPantryPantryProductsForProductsInShoppingList()
+            ]
+        );
     }
 
     public function editShoppingList(Request $request)

@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 class ShoppingListCreator
 {
-    private array $userPantryProductsChangable;
+    private Collection $userPantryProductsChangable;
 
-    private readonly array $userPantryProducts;
+    private readonly Collection $userPantryProducts;
 
     private readonly shopping_list $shoppingList;
 
@@ -38,7 +38,7 @@ class ShoppingListCreator
      * @return shopping_list
      */
 
-    public function createShoppingList(bool $checkPantry = true): shopping_list
+    public function createShoppingList(bool $checkPantry = true): bool
     {
         //@todo weight too...
         if ($checkPantry) {
@@ -59,7 +59,7 @@ class ShoppingListCreator
             'shoppingListProducts',
             $this->shoppingList->shoppingListProducts->merge(collect($neededSubstituteProducts))
         );
-        return $this->shoppingList;
+        return true;
     }
 
     /**
@@ -183,8 +183,7 @@ class ShoppingListCreator
             ->groupBy('products_id', 'users_id')
             ->selectRaw('SUM(amount) AS amount, SUM(net_weight) AS net_weight, MIN(unit_weight) as unit_weight')
             ->get()
-            ->keyBy('products_id')
-            ->toArray();
+            ->keyBy('products_id');
 
         $this->userPantryProductsChangable = $this->userPantryProducts;
     }
@@ -216,5 +215,13 @@ class ShoppingListCreator
         }
 
         return $neededAmount;
+    }
+
+    public function getShoppingList(): shopping_list {
+        return $this->shoppingList;
+    }
+
+    public function getPantryPantryProductsForProductsInShoppingList(): array {
+        return $this->userPantryProducts->whereIn('products_id', $this->shoppingList->shoppingListProducts->pluck('products_id'))->toArray();
     }
 }
