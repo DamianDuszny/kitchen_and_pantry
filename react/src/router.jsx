@@ -6,6 +6,9 @@ import NotFound from "./views/NotFound.jsx";
 import LoggedUserLayout from "./components/LoggedUserLayout.jsx";
 import GuestLayout from "./components/GuestLayout.jsx";
 import Recipes from "./views/Recipes.jsx";
+import Pantry from "./views/Pantry.jsx";
+import PantryList from "./views/PantryList.jsx";
+import AddPantryProduct from "./views/AddPantryProduct.jsx";
 
 const router = createBrowserRouter([
     {
@@ -19,6 +22,20 @@ const router = createBrowserRouter([
             {
                 path: '/przepisy',
                 element: <Recipes />
+            },
+            {
+                path: '/spizarnia',
+                element: <Pantry />,
+                children: [
+                    {
+                        path:'/spizarnia/lista/:page?',
+                        element: <PantryList />
+                    },
+                    {
+                        path:'/spizarnia/dodaj-produkt',
+                        element: <AddPantryProduct />
+                    },
+                ]
             },
             {
                 path: '/',

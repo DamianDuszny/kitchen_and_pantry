@@ -18,12 +18,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::put('/user/register', [UserController::class, 'register']);
+Route::post('/user/login', [UserController::class, 'login']);
+
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('user')->group(function() {
         Route::get('/data', function (Request $request) {
             return $request->user();
         });
         Route::post('/update', [UserController::class, 'update']);
+        Route::get('/logout', function(Request $request) {
+            $user = $request->user();
+
+            $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
+            return true;
+        });
     });
 
     Route::resource('/products', ProductController::class);
@@ -42,6 +51,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/create-shopping-list', [ShoppingListController::class, 'createShoppingList']);
     });
 });
-
-Route::put('/user/register', [UserController::class, 'register']);
-Route::post('/user/login', [UserController::class, 'login']);

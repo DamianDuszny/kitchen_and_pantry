@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PantryProductRequest;
 use App\Models\products;
 use App\Models\user;
 use App\Models\users_products_extra_data;
@@ -17,13 +18,13 @@ class ProductController extends Controller
     {
         /** @var User $user */
         $user = auth('sanctum')->user();
-        return $user->products()->get();
+        return $user->products()->with('description')->paginate(3);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PantryProductRequest $request)
     {
 
         /** @var products $product */
@@ -37,18 +38,23 @@ class ProductController extends Controller
         /** @var user $currentUser */
         $user = $request->user();
         /** @var users_products_extra_data $productExtraData */
-        $productExtraData = $user->users_products_extra_data()->where('products_id', '=', $product->id)->first();
+        $productExtraData = $user->products()->where('products_id', '=', $product->id)->first();
         if (empty($productExtraData)) {
             $productExtraData = new users_products_extra_data();
             $productExtraData->products_id = $product->id;
             $productExtraData->users_id = $user->id;
         }
-        $productExtraData->price = (($request->post('price') ?? 0) * 100) ?: $productExtraData->price;
-        $productExtraData->name = $request->post('name') ?? $productExtraData->name;
+        $productExtraData->price = (($request->post('price') ?? 0) * 100) ?: $productExtraData->price ?: 0;
+//        $productExtraData->name = $request->post('name') ?? $productExtraData->name;
         $productExtraData->unit_weight = $request->post('unit_weight') ?? $productExtraData->unit_weight;
         $productExtraData->net_weight += $request->post('net_weight') ?? 0;
         $productExtraData->amount += $request->post('amount') ?? 0;
-        $productExtraData->save();
+        $description = [
+            'name' => $request->post('name') ?? $productExtraData->description->name
+        ];
+        $productExtraData->setRelation('description', $description);
+        $productExtraData->push();
+
 
     }
 

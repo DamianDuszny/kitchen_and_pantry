@@ -42,7 +42,6 @@ input:focus {
 .btn-delete {
     font-family: "Roboto", sans-serif;
     outline: 0;
-    background: #5b08a7;
     border: 0;
     text-decoration: none;
     padding: 15px;
@@ -82,11 +81,11 @@ input:focus {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-.btn:hover,
-.btn:active,
-.btn:focus {
-    background: #5b08a7;
-}
+/*.btn:hover,*/
+/*.btn:active,*/
+/*.btn:focus {*/
+/*    background: #5b08a7;*/
+/*}*/
 
 .text-center {
     text-align: center;
