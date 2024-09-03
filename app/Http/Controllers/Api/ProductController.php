@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PantryProductRequest;
 use App\Models\products;
 use App\Models\user;
+use App\Models\users_products_descriptions;
 use App\Models\users_products_extra_data;
 use Illuminate\Http\Request;
 
@@ -49,10 +50,20 @@ class ProductController extends Controller
         $productExtraData->unit_weight = $request->post('unit_weight') ?? $productExtraData->unit_weight;
         $productExtraData->net_weight += $request->post('net_weight') ?? 0;
         $productExtraData->amount += $request->post('amount') ?? 0;
-        $description = [
-            'name' => $request->post('name') ?? $productExtraData->description->name
-        ];
-        $productExtraData->setRelation('description', $description);
+        if($request->post('name')) {
+            $desc = new users_products_descriptions();
+            $desc->name = $request->post('name');
+            $desc->products_id = $product->id;
+            $desc->users_id = $user->id;
+            $productExtraData->setRelation('description', $desc);
+            $desc->img_url = '@todo';
+            $desc->company = '@todo';
+        }
+//        $description = [
+//            'name' => $request->post('name') ?? $productExtraData->description->name
+//        ];
+
+        echo gettype($productExtraData);
         $productExtraData->push();
 
 

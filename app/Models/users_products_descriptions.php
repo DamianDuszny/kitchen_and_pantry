@@ -10,6 +10,7 @@ use Awobaz\Compoships\Database\Eloquent\Model;
  * @property int $products_id
  * @property string $name
  * @property string $img_url
+ * @property string $company
  */
 class users_products_descriptions extends Model
 {
@@ -24,5 +25,6 @@ class users_products_descriptions extends Model
         'products_id',
         'name',
         'img_url',
+        'company'
     ];
 }

@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $name
  * @property int $amount
  * @property int $price
+ * @property users_products_descriptions $description
+ * @property products $products_ean
  */
 class users_products_extra_data extends Model
 {
