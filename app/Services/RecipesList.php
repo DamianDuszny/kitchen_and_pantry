@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\DTO\RecipeProduct;
+use App\DTO\RecipesProducts;
 use App\Models\recipes;
 use Carbon\Laravel\ServiceProvider;
 use Illuminate\Http\Client\Request;
@@ -21,16 +23,19 @@ class RecipesList
         $this->modelsList = $sq->get();
     }
 
-    public function getProductsFromRecipes(): array
+    public function getProductsFromRecipes(): RecipesProducts
     {
-        $products = [];
-
+        $recipesProducts = new RecipesProducts();
         /** @var recipes $model */
         foreach ($this->modelsList as $model) {
-            $products['main_products'] = array_merge($products['main_products'] ?? [], $model->recipe_products->toArray());
-            $products['substitute_products'] = array_merge($products['substitute_products'] ?? [] , $model->recipe_substitute_products->toArray());
+            foreach ($model->recipe_products as $product) {
+                $recipesProducts->addMainProduct(new RecipeProduct($product['recipes_id'], $product['products_id'], $product['amount']));
+            }
+            foreach ($model->recipe_substitute_products as $product) {
+                $recipesProducts->addSubstituteProduct(new RecipeProduct($product['recipes_id'], $product['products_id'], $product['amount'], $product['substitute_for']));
+            }
         }
-        return $products;
+        return $recipesProducts;
     }
 
     public function getRecipesIds(): array {

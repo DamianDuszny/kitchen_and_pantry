@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
-import axiosClient from "../axios-client.js";
-import '../assets/noMoreTables.css';
-import '../assets/loading.css';
+import axiosClient from "../../axios-client.js";
+import '../../assets/noMoreTables.css';
+import '../../assets/loading.css';
 import { useParams, Link } from 'react-router-dom';
 
-export default function PantryList() {
+export default function RecipesList() {
     const [response, setResponse] = useState([]);
     const { page } = useParams();
 
     useEffect(() => {
-        getPantryData();
+        getRecipesData();
     }, [page]); // Dodajemy `page` do zależności, aby ponownie załadować dane przy zmianie strony
 
-    function getPantryData() {
-        let url = '/products';
+    function getRecipesData() {
+        let url = '/recipes';
         setResponse({});
 
         if (page) {
@@ -21,6 +21,7 @@ export default function PantryList() {
         }
         axiosClient.get(url)
             .then((response) => {
+                console.log(response.data);
                 setResponse(response.data);
             })
             .catch(error => {
@@ -59,7 +60,7 @@ export default function PantryList() {
                         <thead className="cf">
                         <tr>
                             <th>Nazwa</th>
-                            <th>Ilość</th>
+                            <th>Opis</th>
                             <th className="numeric">Data przydatności</th>
                             <th className="numeric">Masa netto</th>
                             <th className="numeric">Cena</th>
@@ -69,8 +70,8 @@ export default function PantryList() {
                         <tbody>
                         {response.data.map(product => (
                             <tr key={product.id} className="grid-row">
-                                <td data-title="Nazwa">{product.description?.name}</td>
-                                <td data-title="Ilość">{product.amount}</td>
+                                <td data-title="Nazwa">{product.name}</td>
+                                <td data-title="Ilość">{product.description}</td>
                                 <td data-title="Data przydatności">{product.expiration_date}</td>
                                 <td data-title="Masa netto">{product.net_weight}</td>
                                 <td data-title="Cena">{product.price}</td>

@@ -16,7 +16,7 @@ class RecipesController extends Controller
     public function index(Request $request) {
         /** @var user $user */
         $user = auth('sanctum')->user();
-        return $user->recipes()->with('recipe_products')->with('recipe_substitute_products')->get();
+        return $user->recipes()->with('recipe_products')->with('recipe_substitute_products')->paginate(3);
     }
 
     public function show(Request $request, string $id) {

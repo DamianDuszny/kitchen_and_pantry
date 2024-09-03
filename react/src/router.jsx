@@ -9,6 +9,8 @@ import Recipes from "./views/Recipes.jsx";
 import Pantry from "./views/Pantry.jsx";
 import PantryList from "./views/PantryList.jsx";
 import AddPantryProduct from "./views/AddPantryProduct.jsx";
+import AddRecipe from "./views/Recipes/AddRecipe.jsx";
+import RecipesList from "./views/Recipes/RecipesList.jsx";
 
 const router = createBrowserRouter([
     {
@@ -21,7 +23,17 @@ const router = createBrowserRouter([
             },
             {
                 path: '/przepisy',
-                element: <Recipes />
+                element: <Recipes />,
+                children: [
+                    {
+                        path:'/przepisy/lista/:page?',
+                        element: <RecipesList />
+                    },
+                    {
+                        path:'/przepisy/dodaj-przepis',
+                        element: <AddRecipe />
+                    },
+                ]
             },
             {
                 path: '/spizarnia',

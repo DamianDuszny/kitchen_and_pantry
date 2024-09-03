@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\DTO\RecipeProduct;
 use App\Models\shopping_list;
 use App\Models\shopping_list_products;
 use App\Models\user;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class ShoppingListCreator
 {
-    private Collection $userPantryProductsChangable;
+    private Collection $userPantryProductsChangeable;
 
     private readonly Collection $userPantryProducts;
 
@@ -35,17 +36,17 @@ class ShoppingListCreator
     /**
      * @param bool $checkPantry if is set to true, user pantry products amount will be checked and subtracted from needed
      * product amount for recipe. Main products have priority over substitute products.
-     * @return shopping_list
      */
 
     public function createShoppingList(bool $checkPantry = true): bool
     {
         //@todo weight too...
         if ($checkPantry) {
+            $products = $this->recipesList->getProductsFromRecipes();
             $this->setUserPantryProducts(
                 array_merge(
-                    array_column($this->recipesList->getProductsFromRecipes()['main_products'], 'id'),
-                    array_column($this->recipesList->getProductsFromRecipes()['substitute_products'], 'id'),
+                    array_column($products->mainProducts, 'productsId'),
+                    array_column($products->substituteProducts, 'productsId'),
                 )
             );
         }
@@ -85,18 +86,18 @@ class ShoppingListCreator
     private function getNeededMainProducts(bool $checkPantry = true): array
     {
         $shoppingListProducts = [];
-        foreach ($this->recipesList->getProductsFromRecipes()['main_products'] as $product) {
-            for ($i = 0; $i <= $this->multipleRecipes[$product['recipes_id']] ?? 0; $i++) {
+        foreach ($this->recipesList->getProductsFromRecipes()->mainProducts as $product) {
+            for ($i = 0; $i <= $this->multipleRecipes[$product->recipesId] ?? 0; $i++) {
                 $neededAmount = $this->getNeededAmountForProduct($product, $checkPantry);
-                if (empty($shoppingListProducts[$product['products_id']][$product['recipes_id']])) {
+                if (empty($shoppingListProducts[$product->productsId][$product->productsId])) {
                     $shoppingListProduct = $this->getShoppingListProduct(
-                        productsId: $product['products_id'],
-                        recipesId: $product['recipes_id'],
+                        productsId: $product->productsId,
+                        recipesId: $product->recipesId,
                         amount: $neededAmount
                     );
-                    $shoppingListProducts[$product['products_id']][$product['recipes_id']] = $shoppingListProduct;
+                    $shoppingListProducts[$product->productsId][$product->recipesId] = $shoppingListProduct;
                 } else {
-                    $shoppingListProducts[$product['products_id']][$product['recipes_id']]->amount += $neededAmount;
+                    $shoppingListProducts[$product->productsId][$product->recipesId]->amount += $neededAmount;
                 }
             }
         }
@@ -114,22 +115,23 @@ class ShoppingListCreator
         /** @var shopping_list_products $mainShoppingListProduct */
         foreach ($mainProducts as $mainShoppingListProduct) {
             $substitute = $this->findSubstitutesForProductInRecipesList($mainShoppingListProduct);
-            if (empty($substitute)) {
+            if (empty($substitute->productsId)) {
                 continue;
             }
             //if null use amount of main product
-            $substitute['amount'] ??= $mainShoppingListProduct['amount'];
-            if (empty($neededSubstituteProducts[$substitute['products_id']][$mainShoppingListProduct['recipes_id']])) {
+            $substitute->amount ??= $mainShoppingListProduct->amount;
+            $substitute->weight ??= $mainShoppingListProduct->weight;
+            if (empty($neededSubstituteProducts[$substitute->productsId][$mainShoppingListProduct->recipes_id])) {
                 $shoppingListProduct = $this->getShoppingListProduct(
-                    productsId: $substitute['products_id'],
-                    recipesId: $mainShoppingListProduct['recipes_id'],
+                    productsId: $substitute->productsId,
+                    recipesId: $mainShoppingListProduct->recipes_id,
                     amount: $this->getNeededAmountForProduct($substitute, $checkPantry, false),
-                    substituteFor: $mainShoppingListProduct['id'],
+                    substituteFor: $mainShoppingListProduct->id,
                     accepted: false
                 );
-                $neededSubstituteProducts[$substitute['products_id']][$mainShoppingListProduct['recipes_id']] = $shoppingListProduct;
+                $neededSubstituteProducts[$substitute->productsId][$mainShoppingListProduct->recipes_id] = $shoppingListProduct;
             } else {
-                $neededSubstituteProducts[$substitute['products_id']][$mainShoppingListProduct['recipes_id']]->amount += $this->getNeededAmountForProduct($substitute, $checkPantry, false);
+                $neededSubstituteProducts[$substitute->productsId][$mainShoppingListProduct->recipes_id]->amount += $this->getNeededAmountForProduct($substitute, $checkPantry, false);
             }
 
         }
@@ -157,18 +159,18 @@ class ShoppingListCreator
      * @param shopping_list_products $mainProduct
      * @return array
      */
-    private function findSubstitutesForProductInRecipesList(shopping_list_products $mainProduct): array
+    private function findSubstitutesForProductInRecipesList(shopping_list_products $mainProduct): RecipeProduct
     {
-        foreach ($this->recipesList->getProductsFromRecipes()['substitute_products'] as $product) {
-            if ($product['substitute_for'] === $mainProduct['products_id'] && $product['recipes_id'] === $mainProduct['recipes_id']) {
+        foreach ($this->recipesList->getProductsFromRecipes()->substituteProducts as $product) {
+            if ($product->substituteFor === $mainProduct['products_id'] && $product->recipesId === $mainProduct['recipes_id']) {
                 return $product;
             }
         }
-        return [];
+        return new RecipeProduct(0,0, null);
     }
 
     /**
-     * Sets two properties {@see userPantryProducts} and {@see userPantryProductsChangable}.
+     * Sets two properties {@see userPantryProducts} and {@see userPantryProductsChangeable}.
      *
      * @param $productsIds
      * @return void
@@ -184,32 +186,32 @@ class ShoppingListCreator
             ->selectRaw('SUM(amount) AS amount, SUM(net_weight) AS net_weight, MIN(unit_weight) as unit_weight')
             ->get()
             ->keyBy('products_id');
-
-        $this->userPantryProductsChangable = $this->userPantryProducts;
+        $this->userPantryProductsChangeable = $this->userPantryProducts;
     }
 
     /**
-     * Calculate needed amount for product. If checkPantry is set to true will subtract amount from {@see userPantryProductsChangable}
+     * Calculate needed amount for product. If checkPantry is set to true will subtract amount from {@see userPantryProductsChangeable}
      *
-     * @param array $product
+     * @param RecipeProduct $product
      * @param bool $checkPantry
      * @param bool $subtractAmountFromPantry
      * @return int
      */
-    private function getNeededAmountForProduct(array $product, bool $checkPantry = true, bool $subtractAmountFromPantry = true): int
+    private function getNeededAmountForProduct(RecipeProduct $product, bool $checkPantry = true, bool $subtractAmountFromPantry = true): int
     {
-        if (!$checkPantry) {
-            return $product['amount'];
+        if (!$checkPantry || !isset($this->userPantryProductsChangeable[$product->productsId])) {
+            return $product->amount;
         }
-        $productAmountInPantry = $this->userPantryProductsChangable[$product['products_id']]['amount'] ?? 0;
-        if ($product['amount'] >= $productAmountInPantry) {
+
+        $productAmountInPantry = $this->userPantryProductsChangeable[$product->productsId]['amount'] ?? 0;
+        if ($product->amount >= $productAmountInPantry) {
             if ($subtractAmountFromPantry) {
-                $this->userPantryProductsChangable[$product['products_id']]['amount'] = 0;
+                $this->userPantryProductsChangeable[$product->productsId]['amount'] = 0;
             }
-            $neededAmount = $product['amount'] - $productAmountInPantry;
+            $neededAmount = $product->amount - $productAmountInPantry;
         } else {
             if ($subtractAmountFromPantry) {
-                $this->userPantryProductsChangable[$product['products_id']]['amount'] -= $product['amount'];
+                $this->userPantryProductsChangeable[$product->productsId]['amount'] -= $product->amount;
             }
             $neededAmount = 0;
         }
