@@ -19,7 +19,7 @@ class ProductController extends Controller
     {
         /** @var User $user */
         $user = auth('sanctum')->user();
-        return $user->products()->with('description')->paginate(3);
+        return $user->products()->with(['description', 'products_ean'])->paginate(3);
     }
 
     /**
@@ -39,7 +39,7 @@ class ProductController extends Controller
         /** @var user $currentUser */
         $user = $request->user();
         /** @var users_products_extra_data $productExtraData */
-        $productExtraData = $user->products()->where('products_id', '=', $product->id)->first();
+        $productExtraData = $user->products()->where('products_id', '=', $product->id)->where('expiration_date', $request->post('expiration_date') ?? null)->first();
         if (empty($productExtraData)) {
             $productExtraData = new users_products_extra_data();
             $productExtraData->products_id = $product->id;
@@ -50,14 +50,15 @@ class ProductController extends Controller
         $productExtraData->unit_weight = $request->post('unit_weight') ?? $productExtraData->unit_weight;
         $productExtraData->net_weight += $request->post('net_weight') ?? 0;
         $productExtraData->amount += $request->post('amount') ?? 0;
+        $productExtraData->expiration_date = $request->post('expiration_date') ?? null;
         if($request->post('name')) {
             $desc = new users_products_descriptions();
             $desc->name = $request->post('name');
             $desc->products_id = $product->id;
             $desc->users_id = $user->id;
-            $productExtraData->setRelation('description', $desc);
             $desc->img_url = '@todo';
             $desc->company = '@todo';
+            $productExtraData->setRelation('description', $desc);
         }
 //        $description = [
 //            'name' => $request->post('name') ?? $productExtraData->description->name

@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $name
  * @property int $amount
  * @property int $price
+ * @property string $expiration_date
  * @property users_products_descriptions $description
  * @property products $products_ean
  */
@@ -33,6 +34,7 @@ class users_products_extra_data extends Model
         'net_weight',
         'amount',
         'price',
+        'expiration_date'
     ];
 
     public function description(): BelongsTo {
