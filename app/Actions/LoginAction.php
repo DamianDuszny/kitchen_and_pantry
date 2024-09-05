@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Hash;
 class LoginAction {
     public function ActionRun(Request $request): string {
         $user = user::where([
-            'email_address' => $request->post('email_address'),
+            'email' => $request->post('email_address'),
         ])->first();
 
-        if(empty($user->email_address)) {
+        if(empty($user->email)) {
             throw new \Exception('Email address not found in database');
         }
 

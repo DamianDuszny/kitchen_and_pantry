@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::put('/user/register', [UserController::class, 'register']);
 Route::post('/user/login', [UserController::class, 'login']);
+Route::get('/user/send-password-reset-link', [UserController::class, 'sendPasswordResetLink']);
+Route::post('/user/set-new-password', [UserController::class, 'changePasswordWithToken'])->name('password.reset');;
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::prefix('user')->group(function() {
