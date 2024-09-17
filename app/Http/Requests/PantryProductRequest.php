@@ -22,7 +22,8 @@ class PantryProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ean' => ['numeric', 'required'],
+            'ean' => ['numeric', 'required_without:users_product_id'],
+            'users_product_id' => ['numeric', 'required_without:users_product_id'],
             'unit_weight' => ['numeric', 'nullable'],
             'amount' => ['numeric', 'required'],
             'price' => ['numeric', 'nullable'],

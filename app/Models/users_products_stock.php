@@ -20,12 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property users_products_descriptions $description
  * @property products $products_ean
  */
-class users_products_extra_data extends Model
+class users_products_stock extends Model
 {
     use HasFactory;
     use \Awobaz\Compoships\Compoships;
 
-    public $table = 'users_products_extra_data';
+    public $table = 'users_products_stock';
 
     protected $fillable = [
         'users_id',
@@ -34,11 +34,12 @@ class users_products_extra_data extends Model
         'net_weight',
         'amount',
         'price',
-        'expiration_date'
+        'expiration_date',
+        'name',
     ];
 
     public function description(): BelongsTo {
-        return $this->belongsTo(users_products_descriptions::class, ['products_id', 'users_id'], ['products_id', 'users_id']);
+        return $this->belongsTo(users_products_descriptions::class, 'users_products_stock_id');
     }
 
     public function products_ean(): BelongsTo {

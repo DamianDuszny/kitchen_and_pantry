@@ -25,12 +25,12 @@ class StoreRecipeRequest extends FormRequest
             'complexity' => ['int'],
         ];
     }
-
+//@todo move to service
     public function getUserProductsData() {
         $productsIds = array_keys($this->post('products_ids_to_amounts'));
         /** @var user $user */
         $user = auth('sanctum')->user();
-        $userProductsUsedInRecipe = $user->products()->whereIn('products_id', $productsIds)->get()->toArray();
+        $userProductsUsedInRecipe = $user->products_stock()->whereIn('products_id', $productsIds)->get()->toArray();
 
         foreach($userProductsUsedInRecipe as $product) {
             unset($productsIds[array_search($product['pivot']['products_id'],$productsIds)]);

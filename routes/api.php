@@ -37,6 +37,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
     });
 
+    Route::get('/products/findProductsByName', [ProductController::class, 'findProductsByName']);
     Route::resource('/products', ProductController::class);
 
     Route::prefix('recipes')->group(function() {

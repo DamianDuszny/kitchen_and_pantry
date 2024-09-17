@@ -6,7 +6,7 @@ use App\DTO\RecipeProduct;
 use App\Models\shopping_list;
 use App\Models\shopping_list_products;
 use App\Models\user;
-use App\Models\users_products_extra_data;
+use App\Models\users_products_stock;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -178,7 +178,7 @@ class ShoppingListCreator
     private function setUserPantryProducts($productsIds): void
     {
         $this->userPantryProducts = $this->user
-            ->products()
+            ->products_stock()
             ->with('description')
             ->select('products_id')
             ->whereIn('products_id', $productsIds)

@@ -7,7 +7,9 @@ use App\Http\Requests\PantryProductRequest;
 use App\Models\products;
 use App\Models\user;
 use App\Models\users_products_descriptions;
-use App\Models\users_products_extra_data;
+use App\Models\users_products_stock;
+use App\Services\UserProductService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -19,7 +21,18 @@ class ProductController extends Controller
     {
         /** @var User $user */
         $user = auth('sanctum')->user();
-        return $user->products()->with(['description', 'products_ean'])->paginate(3);
+        return $user->products_stock()->with(['description', 'products_ean'])->paginate(10);
+    }
+
+    public function findProductsByName(Request $request) {
+        /** @var User $user */
+        $user = auth('sanctum')->user();
+        $query = $user->products_stock()->with(['description', 'products_ean'])
+        ->whereHas('description', function (Builder $query) use ($request) {
+            $query->where('name', 'LIKE', '%'.$request->get('query').'%');
+        });
+//        echo ( \Illuminate\Support\Str::replaceArray('?', $query->getBindings(), $query->toSql()));die;
+        return $query->get();
     }
 
     /**
@@ -38,10 +51,10 @@ class ProductController extends Controller
 
         /** @var user $currentUser */
         $user = $request->user();
-        /** @var users_products_extra_data $productExtraData */
-        $productExtraData = $user->products()->where('products_id', '=', $product->id)->where('expiration_date', $request->post('expiration_date') ?? null)->first();
+        /** @var users_products_stock $productExtraData */
+        $productExtraData = $user->products_stock()->where('products_id', '=', $product->id)->where('expiration_date', $request->post('expiration_date') ?? null)->first();
         if (empty($productExtraData)) {
-            $productExtraData = new users_products_extra_data();
+            $productExtraData = new users_products_stock();
             $productExtraData->products_id = $product->id;
             $productExtraData->users_id = $user->id;
         }
@@ -54,7 +67,7 @@ class ProductController extends Controller
         if($request->post('name')) {
             $desc = new users_products_descriptions();
             $desc->name = $request->post('name');
-            $desc->products_id = $product->id;
+            $desc->products_id = $product->id; //@todo
             $desc->users_id = $user->id;
             $desc->img_url = '@todo';
             $desc->company = '@todo';
@@ -73,12 +86,9 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $ean)
+    public function show(string $ean, Request $request)
     {
-        /** @var User $user */
-        $user = auth('sanctum')->user();
-        return $user->products()->where('products.ean', $ean)->get();
-
+        return (new UserProductService($request->user()))->findUserProductByEan($ean);
     }
 
     /**
@@ -97,7 +107,7 @@ class ProductController extends Controller
         }
         /** @var user $currentUser */
         $user = $request->user();
-        /** @var users_products_extra_data $productExtraData */
+        /** @var users_products_stock $productExtraData */
         $productExtraData = $user->users_products_extra_data()->find($id);
         if (empty($productExtraData)) {
             return response()->json(
@@ -120,7 +130,7 @@ class ProductController extends Controller
     {
         /** @var User $currentUser */
         $user = auth('sanctum')->user();
-        $productData = $user->products()->where('products.ean', $ean)->first();
+        $productData = $user->products_stock()->where('products.ean', $ean)->first();
         if (empty($productData)) {
             return;
         }

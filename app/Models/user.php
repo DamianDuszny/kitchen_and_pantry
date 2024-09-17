@@ -53,14 +53,9 @@ class user extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function products(): hasMany
+    public function products_stock(): hasMany
     {
-        return $this->hasMany(users_products_extra_data::class,  'users_id');
-    }
-
-    public function users_products_extra_data(): HasMany
-    {
-        return $this->HasMany(users_products_extra_data::class, 'users_id');
+        return $this->hasMany(users_products_stock::class,  'users_id');
     }
 
     public function setFromRequest(\Illuminate\Http\Request $request): self {

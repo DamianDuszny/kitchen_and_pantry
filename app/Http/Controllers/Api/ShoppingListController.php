@@ -7,7 +7,7 @@ use App\Http\Requests\ShoppingListAccessRequest;
 use App\Models\recipes;
 use App\Models\shopping_list;
 use App\Models\user;
-use App\Models\users_products_extra_data;
+use App\Models\users_products_stock;
 use App\Services\RecipesList;
 use App\Services\ShoppingListCreator;
 use Illuminate\Database\Eloquent\Collection;
