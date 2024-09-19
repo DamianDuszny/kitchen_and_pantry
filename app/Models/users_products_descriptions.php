@@ -7,7 +7,7 @@ use Awobaz\Compoships\Database\Eloquent\Model;
 
 /**
  * @property int $users_id
- * @property int $users_products_stocks_id
+ * @property int $users_products_stock_id
  * @property string $name
  * @property string $img_url
  * @property string $company
@@ -22,7 +22,7 @@ class users_products_descriptions extends Model
      */
     protected $fillable = [
         'users_id',
-        'users_products_stocks_id',
+        'users_products_stock_id',
         'name',
         'img_url',
         'company'

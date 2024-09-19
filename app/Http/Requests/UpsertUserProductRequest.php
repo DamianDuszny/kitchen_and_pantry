@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PantryProductRequest extends FormRequest
+class UpsertUserProductRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,12 +22,13 @@ class PantryProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'ean' => ['numeric', 'required_without:users_product_id'],
-            'users_product_id' => ['numeric', 'required_without:users_product_id'],
-            'unit_weight' => ['numeric', 'nullable'],
-            'amount' => ['numeric', 'required'],
-            'price' => ['numeric', 'nullable'],
-            'name' => ['required']
+            'ean' => ['required_without:users_stock_id', 'numeric'],
+            'users_product_id' => ['required_without:ean', 'numeric'],
+            'unit_weight' => [ 'nullable', 'numeric'],
+            'amount' => ['required', 'numeric'],
+            'price' => ['nullable', 'numeric'],
+            'name' => ['nullable','alpha_dash'],
+            'img' => ['nullable']
         ];
     }
 }

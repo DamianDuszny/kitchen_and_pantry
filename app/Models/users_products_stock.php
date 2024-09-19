@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Awobaz\Compoships\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $id
@@ -13,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $products_id
  * @property int $unit_weight
  * @property int $net_weight
- * @property string $name
  * @property int $amount
  * @property int $price
  * @property string $expiration_date
@@ -35,11 +35,10 @@ class users_products_stock extends Model
         'amount',
         'price',
         'expiration_date',
-        'name',
     ];
 
-    public function description(): BelongsTo {
-        return $this->belongsTo(users_products_descriptions::class, 'users_products_stock_id');
+    public function description(): HasOne {
+        return $this->hasOne(users_products_descriptions::class, 'users_products_stock_id');
     }
 
     public function products_ean(): BelongsTo {

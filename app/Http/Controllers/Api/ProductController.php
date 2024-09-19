@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PantryProductRequest;
+use App\Http\Requests\UpsertUserProductRequest;
 use App\Models\products;
 use App\Models\user;
 use App\Models\users_products_descriptions;
@@ -17,11 +17,9 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        /** @var User $user */
-        $user = auth('sanctum')->user();
-        return $user->products_stock()->with(['description', 'products_ean'])->paginate(10);
+        return (new UserProductService($request->user()))->getUserProductStock();
     }
 
     public function findProductsByName(Request $request) {
@@ -38,49 +36,9 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(PantryProductRequest $request)
+    public function store(UpsertUserProductRequest $request)
     {
-
-        /** @var products $product */
-        $product = products::where('ean', $request->post('ean'))->firstOr(function () use ($request) {
-            $product = new products();
-            $product->ean = $request->post('ean');
-            $product->save();
-            return $product;
-        });
-
-        /** @var user $currentUser */
-        $user = $request->user();
-        /** @var users_products_stock $productExtraData */
-        $productExtraData = $user->products_stock()->where('products_id', '=', $product->id)->where('expiration_date', $request->post('expiration_date') ?? null)->first();
-        if (empty($productExtraData)) {
-            $productExtraData = new users_products_stock();
-            $productExtraData->products_id = $product->id;
-            $productExtraData->users_id = $user->id;
-        }
-        $productExtraData->price = (($request->post('price') ?? 0) * 100) ?: $productExtraData->price ?: 0;
-//        $productExtraData->name = $request->post('name') ?? $productExtraData->name;
-        $productExtraData->unit_weight = $request->post('unit_weight') ?? $productExtraData->unit_weight;
-        $productExtraData->net_weight += $request->post('net_weight') ?? 0;
-        $productExtraData->amount += $request->post('amount') ?? 0;
-        $productExtraData->expiration_date = $request->post('expiration_date') ?? null;
-        if($request->post('name')) {
-            $desc = new users_products_descriptions();
-            $desc->name = $request->post('name');
-            $desc->products_id = $product->id; //@todo
-            $desc->users_id = $user->id;
-            $desc->img_url = '@todo';
-            $desc->company = '@todo';
-            $productExtraData->setRelation('description', $desc);
-        }
-//        $description = [
-//            'name' => $request->post('name') ?? $productExtraData->description->name
-//        ];
-
-        echo gettype($productExtraData);
-        $productExtraData->push();
-
-
+        return (new \App\Services\UpsertUserProductServiceFromRequest($request))();
     }
 
     /**
@@ -134,6 +92,6 @@ class ProductController extends Controller
         if (empty($productData)) {
             return;
         }
-        $user->users_products_extra_data()->find($productData->id)->delete();
+        $user->products_stock()->find($productData->id)->delete();
     }
 }
