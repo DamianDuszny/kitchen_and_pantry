@@ -85,7 +85,7 @@ class UserProductService
     }
 
     protected function getEan(): string {
-        return '';
+        return $this->ean;
     }
 
     protected function getUserStockId(): int {
