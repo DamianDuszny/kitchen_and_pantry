@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users_products_descriptions', function (Blueprint $table) {
             $table->dropColumn('products_id');
-            $table->foreignId('users_products_stock_id')->constrained('users_products_stock');
+            $table->foreignId('users_products_stock_id')->constrained('pantry_stock');
         });
     }
 

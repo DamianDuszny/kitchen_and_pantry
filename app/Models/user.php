@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -16,6 +17,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property string $first_name
  * @property string $last_name
  * @property string $password
+ * @property pantry[] $pantries
  */
 class user extends Authenticatable
 {
@@ -52,10 +54,12 @@ class user extends Authenticatable
     protected $casts = [
         'password' => 'hashed',
     ];
+    public function pantries(): BelongsToMany {
+        return $this->belongsToMany(pantry::class, 'pantry_users_access', 'users_id');
+    }
 
-    public function products_stock(): hasMany
-    {
-        return $this->hasMany(users_products_stock::class,  'users_id');
+    public function products_stock(): hasMany {
+        return $this->hasMany(pantry_stock::class);
     }
 
     public function setFromRequest(\Illuminate\Http\Request $request): self {

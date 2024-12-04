@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::rename('users_products_extra_data', 'users_products_stock');
+        Schema::rename('users_products_extra_data', 'pantry_stock');
     }
 
     /**
@@ -19,6 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::rename('users_products_stock', 'users_products_extra_data');
+        Schema::rename('pantry_stock', 'users_products_extra_data');
     }
 };

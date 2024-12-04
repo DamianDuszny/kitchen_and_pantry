@@ -6,7 +6,7 @@ use App\DTO\RecipeProduct;
 use App\Models\shopping_list;
 use App\Models\shopping_list_products;
 use App\Models\user;
-use App\Models\users_products_stock;
+use App\Models\pantry_stock;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 

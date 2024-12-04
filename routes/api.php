@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Pantry;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RecipesController;
-use App\Http\Controllers\Api\ShoppingListController as ShoppingListController;
+use App\Http\Controllers\Api\ShoppingListController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -37,8 +38,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
     });
 
-    Route::get('/products/findProductsByName', [ProductController::class, 'findProductsByName']);
-    Route::resource('/products', ProductController::class);
+    Route::prefix('pantry')->group(function() {
+       Route::get('/list', [Pantry::class, 'list']);
+       Route::post('/create', [Pantry::class, 'createPantry']);
+        Route::prefix('/{pantry_id}')->group(function() {
+            Route::get('/products/findProductsByName', [ProductController::class, 'findProductsByName']);
+            Route::resource('/products', ProductController::class);
+            Route::get('/', [Pantry::class, 'index']);
+            Route::post('/edit', [Pantry::class, 'edit']);
+        });
+    });
 
     Route::prefix('recipes')->group(function() {
         Route::get('/', [RecipesController::class, 'index']);

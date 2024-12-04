@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $id
- * @property int $users_id
+ * @property int $pantry_id
  * @property int $products_id
  * @property int $unit_weight
  * @property int $net_weight
@@ -20,15 +20,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property users_products_descriptions $description
  * @property products $products_ean
  */
-class users_products_stock extends Model
+class pantry_stock extends Model
 {
     use HasFactory;
     use \Awobaz\Compoships\Compoships;
 
-    public $table = 'users_products_stock';
+    public $table = 'pantry_stock';
 
     protected $fillable = [
-        'users_id',
+        'pantry_id',
         'products_id',
         'unit_weight',
         'net_weight',
@@ -37,12 +37,16 @@ class users_products_stock extends Model
         'expiration_date',
     ];
 
-    public function description(): HasOne {
+    public function description(): HasOne {//@todo users_products_stock_id? maybe pantry_stock_id
         return $this->hasOne(users_products_descriptions::class, 'users_products_stock_id');
     }
 
     public function products_ean(): BelongsTo {
         return $this->belongsTo(products::class, 'products_id');
+    }
+
+    public function pantry(): BelongsTo {
+        return $this->belongsTo(pantry::class, 'pantry_id');
     }
 }
 
