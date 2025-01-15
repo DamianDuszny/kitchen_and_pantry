@@ -2,16 +2,16 @@
 
 namespace App\Dictionary\PantryRoles;
 enum PantryRole: int {
-    case OWNER = 1;
-    case GUEST = 2;
+    case CREATOR = 1;
 
-    case TEST = 3;
+    case MEMEBER = 2;
+    case GUEST = 3;
 
-    static function getRolesThatHaveWritePermission(): array {
-        return [self::OWNER];
+    static function rolesWithWritePerm(): array {
+        return [self::CREATOR, self::MEMEBER];
     }
 
-    static function getRolesThatHaveReadPermission(): array {
-        return [self::OWNER, self::GUEST];
+    static function rolesWithReadPerm(): array {
+        return [...self::rolesWithWritePerm(), self::GUEST];
     }
 }

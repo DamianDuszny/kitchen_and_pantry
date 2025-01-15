@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property pantry_stock $pantry_stock
  * @property pantry_users_access $users_privileges
+ * @property user $users
  */
 class pantry extends Model
 {

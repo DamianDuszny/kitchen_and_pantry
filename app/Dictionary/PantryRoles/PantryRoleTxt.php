@@ -2,9 +2,13 @@
 
 namespace App\Dictionary\PantryRoles;
 
-enum Pa ntryRoleTxt: string
+class PantryRoleTxt
 {
-    static function Translate() {
-
+    static function getRoleName(PantryRole $role) {
+        return match($role) {
+            PantryRole::CREATOR => 'Założyciel',
+            PantryRole::MEMEBER => 'Domownik',
+            PantryRole::GUEST => 'Gość',
+        };
     }
 }

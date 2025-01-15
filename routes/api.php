@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\Pantry;
+use App\Http\Controllers\Api\PantryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\RecipesController;
 use App\Http\Controllers\Api\ShoppingListController;
@@ -39,13 +39,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('pantry')->group(function() {
-       Route::get('/list', [Pantry::class, 'list']);
-       Route::post('/create', [Pantry::class, 'createPantry']);
+       Route::get('/list', [PantryController::class, 'list']);
+       Route::post('/create', [PantryController::class, 'createPantry']);
         Route::prefix('/{pantry_id}')->group(function() {
             Route::get('/products/findProductsByName', [ProductController::class, 'findProductsByName']);
             Route::resource('/products', ProductController::class);
-            Route::get('/', [Pantry::class, 'index']);
-            Route::post('/edit', [Pantry::class, 'edit']);
+            Route::get('/', [PantryController::class, 'index']);
+            Route::post('/edit', [PantryController::class, 'edit']);
         });
     });
 

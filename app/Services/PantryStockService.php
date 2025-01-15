@@ -2,22 +2,20 @@
 
 namespace App\Services;
 
-use App\Http\Requests\UpsertPantryStockRequest;
-use App\Models\pantry;
-use App\Models\products;
 use App\Models\user;
 use App\Models\pantry_stock;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
+use App\Exceptions\PantryStockService\NoDataSentException;
 
 class PantryStockService
 {
-    protected \Illuminate\Contracts\Database\Eloquent\Builder $builder;
+    protected Builder $builder;
     private string $name;
 
     public function __construct(
         protected user $user,
-        private readonly int $pantryId,
+        private readonly null|array|int $pantryId,
         private readonly ?int $pagination = 20,
         protected ?string $ean = null,
         protected ?int $stockId = null,
@@ -25,23 +23,24 @@ class PantryStockService
     ) {}
 
 
-    public function getUserProductStock() {
+    public function getUserProductStock(): Collection {
         return $this->setBaseBuilder()->getData();
     }
 
-    public function findUserProductByEan($ean) {
+    public function findUserProductByEan($ean): Collection {
         $this->ean = $ean;
-        return $this->setPantryStockQueryBuilder()->getData();
+        $this->setPantryStockQueryBuilder();
+        return $this->getData();
     }
 
-    public function findStockProductByName(string $name) {
+    public function findStockProductByName(string $name): Collection {
         $this->name = $name;
         $this->setBaseBuilder();
         $this->addPantryProductLikeNameCondition();
-        return $this->builder->get();
+        return $this->getData();
     }
 
-    protected function getData() {
+    protected function getData(): Collection {
         if($this->pagination) {
             $this->builder->paginate($this->pagination);
         }
@@ -57,29 +56,30 @@ class PantryStockService
     protected function addProductKeyConditionToBuilder(): self {
         try {
             $this->addPantryProductsStockIdCondition();
-        } catch (\Exception $e) {
+        } catch (NoDataSentException) {
             $this->addProductsEanCondition();
         }
-        return $this->addExpirationDateCondition();
+        return $this;//->addExpirationDateCondition();
     }
 
     protected function addProductsEanCondition(): self {
-        if(empty($this->getEan())) {
+        if(empty($this->getEan())) {//@todo cannot unset ean from record :(
             throw new \Exception('No products ean');
         }
         $this->builder->whereHas(
             'products_ean',
-            function (\Illuminate\Contracts\Database\Eloquent\Builder $builder) {
+            function (Builder $builder) {
                 $builder->where('ean', $this->getEan());
                 return $builder;
             }
         );
+//        echo \Illuminate\Support\Str::replaceArray('?', $this->builder->getBindings(), $this->builder->toSql());die;
         return $this;
     }
 
     protected function addPantryProductsStockIdCondition(): self {
         if(empty($this->getUserStockId())) {
-            throw new \Exception('No product stock id');
+            throw new NoDataSentException('No product stock id');
         }
         $this->builder->where('id', $this->getUserStockId());
         return $this;
@@ -93,8 +93,18 @@ class PantryStockService
         return $this;
     }
 
-    protected function setBaseBuilder(): self {
-        $this->builder = pantry_stock::with('description', 'products_ean')->where('pantry_id', $this->getPantryId());
+    protected function setBaseBuilder(): self {//@todo może załadować pantry wraz z produktami itd
+        $this->builder = pantry_stock::with('description', 'products_ean', 'pantry.users');
+        if($this->pantryId === null) {
+            $this->builder->whereHas('pantry.users', function (\Illuminate\Contracts\Database\Eloquent\Builder $builder) {
+                $builder->where('users_id', $this->user->id);
+                return $builder;
+            });
+        } elseif(is_numeric($this->pantryId)) {
+            $this->builder->where('pantry_id', $this->pantryId);
+        } else {
+            $this->builder->whereIn('pantryId', $this->pantryId);
+        }
 
         return $this;
     }
@@ -105,10 +115,6 @@ class PantryStockService
 
     protected function getUserStockId(): int {
         return (int)$this->stockId;
-    }
-
-    protected function getPantryId(): int {
-        return $this->pantryId;
     }
 
     private function addExpirationDateCondition(): self

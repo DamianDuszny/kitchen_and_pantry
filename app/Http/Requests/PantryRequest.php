@@ -13,22 +13,49 @@ class PantryRequest extends FormRequest
     public function authorize(): bool
     {
         $user = auth('sanctum')->user();
-        return $user
-            && $user
-                ->pantries()
-                ->where('pantry_id', $this->input('pantry_id'))
-                ->wherePivotIn('role_id', array_map(fn($x) => $x->value, $this->getNeededPermissionLevel()))
+
+        if (!$user) {
+            return false; // Brak uwierzytelnionego użytkownika
+        }
+
+        // Pobierz pantry_id z trasy (lub ustaw null, jeśli go brak)
+        $pantryId = $this->route('pantry_id');
+
+        // Jeśli pantry_id jest podane, sprawdź dostęp do konkretnej spiżarni
+        if ($pantryId) {
+            return $user->pantries()
+                ->where('pantry_id', $pantryId)
+                ->wherePivotIn(
+                    'role_id',
+                    array_map(fn($x) => $x->value, $this->getNeededPermissionLevel())
+                )
                 ->exists();
+        }
+
+        // Jeśli pantry_id nie jest podane, sprawdź, czy użytkownik ma dostęp do jakichkolwiek spiżarni
+        return $user->pantries()
+            ->wherePivotIn(
+                'role_id',
+                array_map(fn($x) => $x->value, $this->getNeededPermissionLevel())
+            )
+            ->exists();
+    }
+    protected function getNeededPermissionLevel(): array {
+        return PantryRole::rolesWithReadPerm();
     }
 
-    protected function getNeededPermissionLevel(): array {
-        return PantryRole::getRolesThatHaveReadPermission();
+    public function validationData()
+    {
+        // Pobranie danych wejściowych i dodanie 'pantry_id' z trasy
+        return array_merge($this->all(), [
+            'pantry_id' => $this->route('pantry_id'),
+        ]);
     }
 
     public function rules(): array
     {
         return [
-            'pantry_id' => ['required', 'numeric']
+            'pantry_id' => ['nullable', 'numeric'] //@todo array of pantries ids
         ];
     }
 }

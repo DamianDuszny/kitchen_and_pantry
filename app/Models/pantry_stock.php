@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $expiration_date
  * @property users_products_descriptions $description
  * @property products $products_ean
+ * @property pantry $pantry
  */
 class pantry_stock extends Model
 {

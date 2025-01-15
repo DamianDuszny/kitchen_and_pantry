@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PantryRequest;
 use App\Http\Requests\UpsertPantryStockRequest;
 use App\Models\user;
 use App\Models\pantry_stock;
@@ -16,12 +17,13 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index($pantryId, Request $request)
+    public function index($pantryId, PantryRequest $request)
     {
-        return (new PantryStockService($request->user(), $pantryId))->getUserProductStock();
+
+        return (new PantryStockService($request->user(), $pantryId ?: null))->getUserProductStock();
     }
 
-    public function findProductsByName(int $pantryId, Request $request) {
+    public function findProductsByName(int $pantryId, PantryRequest $request) {
         return (new PantryStockService($request->user(), $pantryId))->findStockProductByName($request->get('name'));
     }
 
@@ -36,9 +38,9 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $pantryId, string $ean, Request $request)
+    public function show(string $pantryId, string $ean, PantryRequest $request)
     {
-        return (new PantryStockService($request->user(), $pantryId))->findUserProductByEan($ean);
+        return (new PantryStockService($request->user(), $pantryId ?: null))->findUserProductByEan($ean);
     }
 
     /**

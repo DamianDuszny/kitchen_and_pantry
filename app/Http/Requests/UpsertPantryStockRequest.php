@@ -14,7 +14,7 @@ class UpsertPantryStockRequest extends PantryRequest
     public function rules(): array
     {
         return array_merge([
-            'ean' => ['required_without:pantry_stock_id', 'numeric'],
+            'ean' => ['required_without:pantry_stock_id', 'numeric', 'nullable'],
             'pantry_stock_id' => ['required_without:ean', 'numeric'],
             'unit_weight' => [ 'nullable', 'numeric'],
             'amount' => ['required', 'numeric'],
@@ -25,6 +25,6 @@ class UpsertPantryStockRequest extends PantryRequest
     }
 
     protected function getNeededPermissionLevel(): array {
-        return PantryRole::getRolesThatHaveWritePermission();
+        return PantryRole::rolesWithWritePerm();
     }
 }
