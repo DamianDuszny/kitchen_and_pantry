@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\RecipesList;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,5 +31,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        ResetPassword::createUrlUsing(function ($notifiable, $token) use ($url) {
+            return config('app.frontend_url') . '/ustaw-nowe-haslo?token=' . $token . '&email=' . urlencode($notifiable->getEmailForPasswordReset());
+        });
     }
 }

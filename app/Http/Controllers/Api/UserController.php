@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Actions\LoginAction;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Jobs\SendPasswordResetLink;
 use App\Models\user;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -52,13 +53,9 @@ class UserController extends BaseController
     public function sendPasswordResetLink(Request $request) {
         $request->validate(['email_address' => 'required|email']);
 
-        $status = Password::sendResetLink(['email'=>$request->only('email_address')]);
+        SendPasswordResetLink::dispatch($request->input('email_address'));
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => __($status)]);
-        }
-
-        return response()->json(['message' => __($status)], 400);
+        return response()->json(['message' => 'Reset link will be sent shortly.']);
     }
 
     public function changePasswordWithToken(Request $request) {

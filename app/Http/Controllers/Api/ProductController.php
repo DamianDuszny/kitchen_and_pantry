@@ -19,7 +19,6 @@ class ProductController extends Controller
      */
     public function index($pantryId, PantryRequest $request)
     {
-
         return (new PantryStockService($request->user(), $pantryId ?: null))->getUserProductStock();
     }
 
